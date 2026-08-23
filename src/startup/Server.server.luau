@@ -33,6 +33,7 @@ end
 const function OnPlayerRemoving(Player: Player)
 	ClassService.RemovePlayer(Player)
 	SanityService.RemovePlayer(Player)
+	DialogueService.RemovePlayer(Player)
 end
 
 for _, Player in Players:GetPlayers() do

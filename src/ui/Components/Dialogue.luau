@@ -2,6 +2,7 @@
 --!native
 
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 const Typewrite = require(ReplicatedStorage:WaitForChild("UI"):WaitForChild("Utils"):WaitForChild("Typewrite"))
 const View = require(ReplicatedStorage:WaitForChild("UI"):WaitForChild("Views"):WaitForChild("DialogueView"))
@@ -19,8 +20,8 @@ function Dialogue.SendText(Line: string)
 		View:Show()
 	end
 
-	Typewrite.Type(TextLabel, Line, 0.04):Wait()
-	task.delay(1.5, function()
+	Typewrite.Type(TextLabel, Line, GameConfig.Dialogue.TypewriteDelay):Wait()
+	task.delay(GameConfig.Dialogue.AutoHideDelay, function()
 		View:Hide()
 		TextLabel.Text = ""
 	end)

@@ -1,9 +1,13 @@
 --!strict
+--!native
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Services & Modules --
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Red = require(ReplicatedStorage.Packages.Red)
+const Red = require(ReplicatedStorage.Packages.Red)
 
+
+-- Network Contract --
 return Red.Function("PurchaseClass", function(ClassId)
 	assert(type(ClassId) == "string", "PurchaseClass: ClassId must be a string")
 

@@ -1,8 +1,10 @@
 --!strict
+--!native
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Services & Modules --
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Red = require(ReplicatedStorage.Packages.Red)
+const Red = require(ReplicatedStorage.Packages.Red)
 
 -- Types --
 type PayloadType = {
@@ -11,6 +13,8 @@ type PayloadType = {
 	VisibleTraitDescriptions: { string },
 }
 
+
+-- Network Contract --
 return Red.Event("PatientSpawned", function(Payload: any)
 	assert(type(Payload) == "table", "Expected Payload to be a table, got " .. typeof(Payload))
 	assert(type(Payload.Id) == "string", "Expected Payload.Id to be a string, got " .. typeof(Payload.Id))

@@ -1,24 +1,33 @@
 --!strict
 --!native
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Initializer = require(ReplicatedStorage:WaitForChild("UI"):WaitForChild("UI"):WaitForChild("Dialogue"))
-local Initialized = false
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
+const Initializer = require(ReplicatedStorage:WaitForChild("UI"):WaitForChild("UI"):WaitForChild("Dialogue"))
 
-local StartDialogue = require(ReplicatedStorage.Network.StartDialogue):Server()
+const StartDialogue = require(ReplicatedStorage.Network.StartDialogue):Server()
 
-local DialogueService = {}
+const DialogueService = {}
+
+-- Weak keys prevent departed players from being retained by this service state.
+const InitializedPlayers: { [Player]: boolean } = setmetatable({}, { __mode = "k" }) :: { [Player]: boolean }
 
 function DialogueService.Start(Player: Player, Text: string)
-	if not Initialized then
+	if not InitializedPlayers[Player] then
 		Initializer:Initialize(Player)
-		Initialized = true
-		task.delay(1, function()
-			StartDialogue:Fire(Player, { Text = Text })
-		end)
-	else
-		StartDialogue:Fire(Player, { Text = Text })
+		InitializedPlayers[Player] = true
 	end
+
+	-- Give the cloned LocalScript/UI a chance to initialize before sending its first event.
+	task.delay(GameConfig.Dialogue.InitializationDelay, function()
+		if Player.Parent then
+			StartDialogue:Fire(Player, { Text = Text })
+		end
+	end)
+end
+
+function DialogueService.RemovePlayer(Player: Player)
+	InitializedPlayers[Player] = nil
 end
 
 return DialogueService

@@ -5,6 +5,12 @@
     "ReplicatedStorage": {
       "Shared": {
         "$className": "Folder",
+        "Config": {
+          "$className": "Folder",
+          "GameConfig": {
+            "$path": "src/config/GameConfig.luau"
+          }
+        },
         "Services": {
           "$className": "Folder",
           "ClassService": {

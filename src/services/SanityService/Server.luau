@@ -7,24 +7,22 @@ const RunService = game:GetService("RunService")
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Signal = require(ReplicatedStorage.Packages.Signal) :: any
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 -- Red networking --
 const SanityChanged = require(ReplicatedStorage.Network.SanityChanged):Server()
 
 const SanityService = {}
 
--- Configuration --
-const MAX_SANITY: number = 100
-const BASE_DRAIN_PER_MINUTE: number = 9
-const DRAIN_SCALE_PER_SHIFT: number = 0.03
-
 -- Types --
 type SanityState = {
 	Value: number,
 	DrainMultiplier: number,
+	LastReplicatedValue: number,
 }
 
 -- States --
+-- Weak keys let departed Player instances disappear without leaving stale state behind.
 const PlayerSanity: {
 	[Player]: SanityState,
 } = setmetatable({}, { __mode = "k" }) :: { [Player]: SanityState }
@@ -34,16 +32,17 @@ SanityService.SanityChanged = Signal.new()
 
 -- Private API --
 const function ClampSanity(Value: number): number
-	return math.clamp(Value, 0, MAX_SANITY)
+	return math.clamp(Value, 0, GameConfig.Sanity.Max)
 end
 
 -- Public API --
 function SanityService.InitPlayer(Player: Player)
 	PlayerSanity[Player] = {
-		Value = MAX_SANITY,
+		Value = GameConfig.Sanity.Max,
 		DrainMultiplier = 1,
+		LastReplicatedValue = GameConfig.Sanity.Max,
 	}
-	SanityChanged:Fire(Player, MAX_SANITY)
+	SanityChanged:Fire(Player, GameConfig.Sanity.Max)
 end
 
 function SanityService.RemovePlayer(Player: Player)
@@ -57,7 +56,7 @@ function SanityService.SetShiftDrainScale(Player: Player, ShiftNumber: number)
 		return
 	end
 
-	State.DrainMultiplier = 1 + (ShiftNumber * DRAIN_SCALE_PER_SHIFT)
+	State.DrainMultiplier = 1 + (ShiftNumber * GameConfig.Sanity.DrainScalePerShift)
 end
 
 function SanityService.Restore(Player: Player, Amount: number)
@@ -71,6 +70,7 @@ function SanityService.Restore(Player: Player, Amount: number)
 
 	SanityService.SanityChanged:Fire(Player, State.Value)
 
+	State.LastReplicatedValue = State.Value
 	SanityChanged:Fire(Player, State.Value)
 end
 
@@ -85,8 +85,6 @@ function SanityService.Drain(Player: Player, Amount: number)
 
 	SanityService.SanityChanged:Fire(Player, State.Value)
 
-	SanityChanged:Fire(Player, State.Value)
-
 	if State.Value <= 0 then
 		SanityService.SanityDepleted:Fire(Player)
 	end
@@ -99,11 +97,28 @@ function SanityService.GetSanity(Player: Player): number
 end
 
 -- Passive sanity loss --
+-- The accumulator batches replication so sanity is not sent every Heartbeat.
+local ReplicationAccumulator = 0
 
 RunService.Heartbeat:Connect(function(DeltaTime: number)
+	if GameConfig.Sanity.PassiveDrainEnabled then
+		for Player, State in PlayerSanity do
+			if State.Value > 0 then
+				SanityService.Drain(Player, GameConfig.Sanity.BaseDrainPerMinute / 60 * State.DrainMultiplier * DeltaTime)
+			end
+		end
+	end
+
+	ReplicationAccumulator += DeltaTime
+	if ReplicationAccumulator < GameConfig.Sanity.ReplicationInterval then
+		return
+	end
+	ReplicationAccumulator = 0
+
 	for Player, State in PlayerSanity do
-		if State.Value > 0 then
-			SanityService.Drain(Player, BASE_DRAIN_PER_MINUTE / 60 * State.DrainMultiplier * DeltaTime)
+		if math.abs(State.Value - State.LastReplicatedValue) > GameConfig.Sanity.ReplicationEpsilon then
+			State.LastReplicatedValue = State.Value
+			SanityChanged:Fire(Player, State.Value)
 		end
 	end
 end)

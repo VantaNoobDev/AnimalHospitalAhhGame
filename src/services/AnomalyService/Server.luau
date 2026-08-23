@@ -5,15 +5,12 @@
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const PatientDefinitions = require(ReplicatedStorage.Shared.Services.PatientService.PatientServiceUtils)
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 const AnomalyDetectionService = {}
 
--- Configuration --
-const MIN_ANOMALY_TRAITS: number = 2
-const MAX_ANOMALY_TRAITS: number = 4
-const RED_HERRING_CHANCE: number = 0.08
-
 -- Private API --
+-- Fisher-Yates keeps the trait selection unbiased before the requested amount is taken.
 const function ShuffledTraitPool(): { PatientDefinitions.Trait }
 	const Pool = table.clone(PatientDefinitions.Traits)
 
@@ -31,7 +28,7 @@ function AnomalyDetectionService.RollTraits(IsAnomaly: boolean): { PatientDefini
 	const Pool = ShuffledTraitPool()
 
 	if IsAnomaly then
-		const Count = math.random(MIN_ANOMALY_TRAITS, MAX_ANOMALY_TRAITS)
+		const Count = math.random(GameConfig.Anomalies.MinTraits, GameConfig.Anomalies.MaxTraits)
 
 		const Rolled: { PatientDefinitions.Trait } = {}
 
@@ -42,11 +39,11 @@ function AnomalyDetectionService.RollTraits(IsAnomaly: boolean): { PatientDefini
 		return Rolled
 	end
 
-	if math.random() < RED_HERRING_CHANCE then
+	if math.random() < GameConfig.Anomalies.RedHerringChance then
 		const LowWeightPool: { PatientDefinitions.Trait } = {}
 
 		for _, TraitData in Pool do
-			if TraitData.Weight <= 0.35 then
+			if TraitData.Weight <= GameConfig.Anomalies.RedHerringMaxWeight then
 				table.insert(LowWeightPool, TraitData)
 			end
 		end

@@ -5,6 +5,7 @@
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const PatientDefinitions = require(ReplicatedStorage.Shared.Services.PatientService.PatientServiceUtils)
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 const AnomalyDetectionService = require(script.Parent.Parent.AnomalyService.AnomalyServiceServer)
 
@@ -36,7 +37,7 @@ local NextPatientId = 0
 const function GenerateId(): string
 	NextPatientId += 1
 
-	return "Patient_" .. tostring(NextPatientId)
+	return GameConfig.Patients.IdPrefix .. tostring(NextPatientId)
 end
 
 const function PickRandomSpecies(): PatientDefinitions.PatientTemplate
@@ -61,7 +62,7 @@ function PatientService.SpawnPatient(AnomalyChance: number): ActivePatient
 		RolledTraits = AnomalyDetectionService.RollTraits(IsAnomaly),
 		Registered = false,
 		Treated = false,
-		AssignedRoom = "CheckIn",
+		AssignedRoom = GameConfig.Patients.InitialRoom :: PatientDefinitions.RoomId,
 	}
 
 	ActivePatients[Patient.Id] = Patient
@@ -84,6 +85,10 @@ function PatientService.ResolveCheckIn(PatientId: string, PlayerAdmitted: boolea
 		return false
 	end
 
+	if Patient.Registered and not GameConfig.Patients.AllowMultipleCheckInResolutions then
+		return false
+	end
+
 	Patient.Registered = true
 
 	local CorrectDecision = (PlayerAdmitted and not Patient.IsAnomaly) or (not PlayerAdmitted and Patient.IsAnomaly)
@@ -94,7 +99,7 @@ end
 function PatientService.AssignRoom(PatientId: string, Room: PatientDefinitions.RoomId): boolean
 	local Patient = ActivePatients[PatientId]
 
-	if not Patient then
+	if not Patient or (GameConfig.Patients.RequireCheckInBeforeRoom and not Patient.Registered) or Patient.Treated then
 		return false
 	end
 
@@ -106,7 +111,11 @@ end
 function PatientService.ApplyTreatment(PatientId: string, TreatmentId: PatientDefinitions.TreatmentId): boolean
 	const Patient = ActivePatients[PatientId]
 
-	if not Patient then
+	if not Patient or (GameConfig.Patients.RequireCheckInBeforeRoom and not Patient.Registered) or Patient.Treated then
+		return false
+	end
+
+	if GameConfig.Patients.RequireCorrectRoomForTreatment and Patient.AssignedRoom ~= Patient.Template.CorrectRoom then
 		return false
 	end
 
@@ -114,6 +123,9 @@ function PatientService.ApplyTreatment(PatientId: string, TreatmentId: PatientDe
 
 	if IsValid then
 		Patient.Treated = true
+		if GameConfig.Patients.ClearPatientOnSuccessfulTreatment then
+			task.defer(PatientService.ClearPatient, PatientId)
+		end
 	end
 
 	return IsValid
@@ -148,18 +160,30 @@ function PatientService.ClearAll()
 end
 
 -- Red Functions --
-ResolveCheckIn:SetCallback(function(Player: Player, PatientId: string, PlayerAdmitted: boolean): boolean
+ResolveCheckIn:SetCallback(function(Player: Player, PatientId: string, PlayerAdmitted: boolean)
 	warn(Player.Name .. " has resolved the check in.")
-	return PatientService.ResolveCheckIn(PatientId, PlayerAdmitted)
+	PatientService.ResolveCheckIn(PatientId, PlayerAdmitted)
 end)
 
-ApplyTreatment:SetCallback(function(Player: Player, PatientId: string, TreatmentId: string): boolean
+ApplyTreatment:SetCallback(function(Player: Player, PatientId: string, TreatmentId: string)
 	warn(Player.Name .. " has applied treatment.")
-	return PatientService.ApplyTreatment(PatientId, TreatmentId :: PatientDefinitions.TreatmentId)
+	PatientService.ApplyTreatment(PatientId, TreatmentId :: PatientDefinitions.TreatmentId)
 end)
 
 -- Red Events --
 AssignRoom:On(function(Player: Player, PatientId: string, Room: string)
+	local ValidRooms = {
+		CheckIn = true,
+		GeneralCare = true,
+		OperatingRoom = true,
+		Quarantine = true,
+	}
+
+	if not ValidRooms[Room] then
+		warn("PatientService.AssignRoom: invalid room from " .. Player.Name)
+		return
+	end
+
 	warn(Player.Name .. " has assigned a room.")
 	PatientService.AssignRoom(PatientId, Room :: PatientDefinitions.RoomId)
 end)

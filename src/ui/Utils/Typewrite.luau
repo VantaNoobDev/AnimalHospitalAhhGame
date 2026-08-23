@@ -1,5 +1,7 @@
+--!strict
 --!native
 
+-- RichText cannot safely reveal partial tags, so the text is split into tags and characters first.
 const function ParseStructure(Text: string)
 	const Structure = {}
 	local i = 1
@@ -48,6 +50,7 @@ function Typewrite.Type(TextLabel: TextLabel, Text: string, Speed: number?): RBX
 			else
 				DisplayText ..= Element.content
 				local TempText = DisplayText
+				-- Temporarily close active tags while the next character is being revealed.
 				for _ = #OpenTags, 1, -1 do
 					TempText ..= "</font>"
 				end

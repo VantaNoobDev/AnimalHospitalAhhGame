@@ -1,9 +1,13 @@
 --!strict
+--!native
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Services & Modules --
+const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Red = require(ReplicatedStorage.Packages.Red)
+const Red = require(ReplicatedStorage.Packages.Red)
 
+
+-- Network Contract --
 return Red.Event("SanityChanged", function(NewValue)
 	assert(type(NewValue) == "number", "SanityChanged event expects a number as the new value")
 	assert(NewValue >= 0, "SanityChanged event expects a value between 0 and 100")

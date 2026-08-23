@@ -1,3 +1,6 @@
+--!strict
+--!native
+
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const StartDialogue = require(ReplicatedStorage.Network.StartDialogue):Client()
@@ -9,6 +12,7 @@ const Controller = {}
 StartDialogue:On(function(Payload)
 	print("Dialogue received: ", Payload.Text)
 
+	-- Convert the project's lightweight _Color_text_Color_ markup into RichText once.
 	local CloneText = Payload.Text
 	CloneText = CloneText:gsub("(_%a+_[^_]+_%a+_)", function(Match: string): string
 		const ColorName, Text = Match:match("^_(%a+)_(.-)_%a+_$")

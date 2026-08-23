@@ -1,4 +1,7 @@
-return {
+--!strict
+--!native
+
+local DialogueEnums = {
 	Colors = {
 		cs = Color3.fromRGB(0, 255, 255),
 		rs = Color3.fromRGB(255, 0, 0),
@@ -8,7 +11,13 @@ return {
 		ps = Color3.fromRGB(170, 0, 255),
 	},
 
-	CommomDialogues = {
+	CommonDialogues = {
 		"Hello, i am %s.",
 	},
 }
+
+table.freeze(DialogueEnums.Colors)
+table.freeze(DialogueEnums.CommonDialogues)
+table.freeze(DialogueEnums)
+
+return DialogueEnums

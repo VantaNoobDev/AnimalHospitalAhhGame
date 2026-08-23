@@ -1,6 +1,8 @@
 --!strict
 --!native
+
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 -- Red networking --
 const ClassDataSynced = require(ReplicatedStorage.Network.ClassDataSynced):Server()
@@ -8,7 +10,6 @@ const ClassPurchased = require(ReplicatedStorage.Network.ClassPurchased):Server(
 const ClassLeveledUp = require(ReplicatedStorage.Network.ClassLeveledUp):Server()
 const PurchaseClass = require(ReplicatedStorage.Network.PurchaseClass)
 
-const EXP_PER_LEVEL: number = 100
 const ClassService = {}
 
 -- Types --
@@ -75,9 +76,11 @@ const PlayerClassData: { [Player]: PlayerClassData } = setmetatable({}, { __mode
 
 -- Public API --
 function ClassService.InitPlayer(Player: Player, SavedData: PlayerClassData?)
-	const Data = SavedData or {
-		Intern = { Owned = true, Level = 1, Exp = 0 },
-	}
+	const Data = SavedData or {}
+
+	if GameConfig.Classes.AutoGrantIntern and not Data.Intern then
+		Data.Intern = { Owned = true, Level = 1, Exp = 0 }
+	end
 
 	PlayerClassData[Player] = Data
 	ClassDataSynced:Fire(Player, Data)
@@ -95,7 +98,7 @@ function ClassService.PurchaseClass(Player: Player, ClassId: string): boolean
 		return false
 	end
 
-	if Data[ClassId] and Data[ClassId].Owned then
+	if Data[ClassId] and Data[ClassId].Owned and not GameConfig.Classes.AllowRepurchase then
 		return false
 	end
 
@@ -118,17 +121,21 @@ function ClassService.AddExp(Player: Player, ClassId: string, Amount: number)
 		return
 	end
 
-	Entry.Exp += Amount
+	if Amount < 0 and not GameConfig.Classes.AllowNegativeExp then
+		return
+	end
 
-	while Entry.Exp >= EXP_PER_LEVEL and Entry.Level < Definition.MaxLevel do
-		Entry.Exp -= EXP_PER_LEVEL
+	Entry.Exp = math.max(0, Entry.Exp + Amount)
+
+	while Entry.Exp >= GameConfig.Classes.ExpPerLevel and Entry.Level < Definition.MaxLevel do
+		Entry.Exp -= GameConfig.Classes.ExpPerLevel
 		Entry.Level += 1
 		ClassLeveledUp:Fire(Player, ClassId, Entry.Level)
 	end
 end
 
-PurchaseClass:SetCallback(function(Player: Player, ClassId: string): boolean
-	return ClassService.PurchaseClass(Player, ClassId)
+PurchaseClass:SetCallback(function(Player: Player, ClassId: string)
+	ClassService.PurchaseClass(Player, ClassId)
 end)
 
 function ClassService.GetPerkValue(Player: Player, ClassId: string): number

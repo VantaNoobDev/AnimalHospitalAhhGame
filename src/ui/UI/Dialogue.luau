@@ -1,3 +1,6 @@
+--!strict
+--!native
+
 const RunService = game:GetService("RunService")
 const ServerStorage = game:GetService("ServerStorage")
 

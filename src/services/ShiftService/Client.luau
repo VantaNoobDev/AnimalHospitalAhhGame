@@ -6,15 +6,13 @@ const RunService = game:GetService("RunService")
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Signal = require(ReplicatedStorage.Packages.Signal)
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 -- Red networking --
 const ShiftStarted = require(ReplicatedStorage.Network.ShiftStarted):Client()
 const ShiftEnded = require(ReplicatedStorage.Network.ShiftEnded):Client()
 
 const ShiftClient = {}
-
--- Configuration --
-const BASE_SHIFT_DURATION: number = 90
 
 -- Types --
 type LocalShiftState = {
@@ -37,7 +35,7 @@ ShiftClient.TimeUpdated = Signal.new()
 -- Incoming from server --
 const function OnShiftStarted(ShiftNumber: number)
 	State.Number = ShiftNumber
-	State.TimeRemaining = BASE_SHIFT_DURATION
+	State.TimeRemaining = GameConfig.Shift.BaseDuration
 	State.Active = true
 
 	ShiftClient.ShiftStarted:Fire(ShiftNumber)

@@ -8,20 +8,13 @@ const ReplicatedStorage = game:GetService("ReplicatedStorage")
 const PatientService = require(script.Parent.Parent.PatientService.PatientServiceServer)
 const SanityService = require(script.Parent.Parent.SanityService.SanityServiceServer)
 const Signal = require(ReplicatedStorage.Packages.Signal) :: any
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 -- Red networking --
 const ShiftStarted = require(ReplicatedStorage.Network.ShiftStarted):Server()
 const ShiftEnded = require(ReplicatedStorage.Network.ShiftEnded):Server()
 
 const ShiftService = {}
-
--- Configuration --
-const BASE_SHIFT_DURATION: number = 90
-const BASE_PATIENT_INTERVAL: number = 8
-const BASE_ANOMALY_CHANCE: number = 0.15
-
-const INTERVAL_SCALE_PER_SHIFT: number = 0.92
-const ANOMALY_CHANCE_SCALE_PER_SHIFT: number = 0.02
 
 -- Types --
 type ShiftState = {
@@ -47,11 +40,11 @@ ShiftService.ShiftEnded = Signal.new()
 
 -- Private API --
 const function GetPatientInterval(ShiftNumber: number): number
-	return BASE_PATIENT_INTERVAL * (INTERVAL_SCALE_PER_SHIFT ^ ShiftNumber)
+	return math.max(GameConfig.Shift.MinimumPatientInterval, GameConfig.Shift.BasePatientInterval * (GameConfig.Shift.IntervalScalePerShift ^ ShiftNumber))
 end
 
 const function GetAnomalyChance(ShiftNumber: number): number
-	return math.min(BASE_ANOMALY_CHANCE + (ShiftNumber * ANOMALY_CHANCE_SCALE_PER_SHIFT), 0.6)
+	return math.min(GameConfig.Shift.BaseAnomalyChance + (ShiftNumber * GameConfig.Shift.AnomalyChanceScalePerShift), GameConfig.Shift.MaximumAnomalyChance)
 end
 
 const function EndShift(Survived: boolean)
@@ -79,8 +72,8 @@ function ShiftService.StartShift(ShiftNumber: number)
 	CurrentShift = {
 		Number = ShiftNumber,
 		Active = true,
-		TimeRemaining = BASE_SHIFT_DURATION,
-		NextSpawnIn = 0,
+		TimeRemaining = GameConfig.Shift.BaseDuration,
+		NextSpawnIn = if GameConfig.Shift.StartPatientImmediately then 0 else GetPatientInterval(ShiftNumber),
 	}
 
 	for _, Player in Players:GetPlayers() do

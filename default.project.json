@@ -1,0 +1,152 @@
+{
+  "name": "AnimalHospitalAHHGame",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$className": "Folder",
+        "Services": {
+          "$className": "Folder",
+          "ClassService": {
+            "$className": "Folder",
+            "ClassServiceClient": {
+              "$path": "src/services/ClassService/Client.luau"
+            }
+          },
+          "PatientService": {
+            "$className": "Folder",
+            "PatientServiceClient": {
+              "$path": "src/services/PatientService/Client.luau"
+            },
+            "PatientServiceUtils": {
+              "$path": "src/services/PatientService/Utils.luau"
+            }
+          },
+          "SanityService": {
+            "$className": "Folder",
+            "SanityServiceClient": {
+              "$path": "src/services/SanityService/Client.luau"
+            }
+          },
+          "ShiftService": {
+            "$className": "Folder",
+            "ShiftServiceClient": {
+              "$path": "src/services/ShiftService/Client.luau"
+            }
+          }
+        },
+        "Classes": {
+          "$className": "Folder"
+        },
+        "Modules": {
+          "$className": "Folder"
+        }
+      },
+      "Network": {
+        "$className": "Folder",
+        "ApplyTreatment": {
+          "$path": "src/network/ApplyTreatment.luau"
+        },
+        "AssignRoom": {
+          "$path": "src/network/AssignRoom.luau"
+        },
+        "ClassDataSynced": {
+          "$path": "src/network/ClassDataSynced.luau"
+        },
+        "ClassLeveledUp": {
+          "$path": "src/network/ClassLeveledUp.luau"
+        },
+        "ClassPurchased": {
+          "$path": "src/network/ClassPurchased.luau"
+        },
+        "PatientResolved": {
+          "$path": "src/network/PatientResolved.luau"
+        },
+        "PatientSpawned": {
+          "$path": "src/network/PatientSpawned.luau"
+        },
+        "PurchaseClass": {
+          "$path": "src/network/PurchaseClass.luau"
+        },
+        "ResolveCheckIn": {
+          "$path": "src/network/ResolveCheckIn.luau"
+        },
+        "SanityChanged": {
+          "$path": "src/network/SanityChanged.luau"
+        },
+        "ShiftEnded": {
+          "$path": "src/network/ShiftEnded.luau"
+        },
+        "ShiftStarted": {
+          "$path": "src/network/ShiftStarted.luau"
+        },
+        "StartDialogue": {
+          "$path": "src/network/StartDialogue.luau"
+        }
+      },
+      "Packages": {
+        "$path": "Packages"
+      },
+      "UI": {
+        "$path": "src/ui"
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/startup/Server.server.luau"
+      },
+      "Services": {
+        "$className": "Folder",
+        "AnomalyService": {
+          "$className": "Folder",
+          "AnomalyServiceServer": {
+            "$path": "src/services/AnomalyService/Server.luau"
+          }
+        },
+        "ClassService": {
+          "$className": "Folder",
+          "ClassServiceServer": {
+            "$path": "src/services/ClassService/Server.luau"
+          }
+        },
+        "DialogueService": {
+          "$className": "Folder",
+          "DialogueServiceServer": {
+            "$path": "src/services/DialogueService/Server.luau"
+          }
+        },
+        "PatientService": {
+          "$className": "Folder",
+          "PatientServiceServer": {
+            "$path": "src/services/PatientService/Server.luau"
+          }
+        },
+        "SanityService": {
+          "$className": "Folder",
+          "SanityServiceServer": {
+            "$path": "src/services/SanityService/Server.luau"
+          }
+        },
+        "ShiftService": {
+          "$className": "Folder",
+          "ShiftServiceServer": {
+            "$path": "src/services/ShiftService/Server.luau"
+          }
+        }
+      },
+      "Classes": {
+        "$className": "Folder"
+      },
+      "Modules": {
+        "$className": "Folder"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/startup/Client.client.luau"
+        }
+      }
+    }
+  }
+}

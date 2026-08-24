@@ -1,15 +1,15 @@
 --!strict
 --!native
 
-local Players = game:GetService("Players")
+const Players = game:GetService("Players")
 
-local LocalPlayer = assert(Players.LocalPlayer, "LocalPlayer is nil")
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local UI = PlayerGui:WaitForChild("DialogueUI") :: ScreenGui
-local Frame = UI:WaitForChild("Frame") :: Frame
-local TextLabel = Frame:WaitForChild("TextLabel") :: TextLabel
+const LocalPlayer = assert(Players.LocalPlayer, "LocalPlayer is nil")
+const PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+const UI = PlayerGui:WaitForChild("DialogueUI") :: ScreenGui
+const Frame = UI:WaitForChild("Frame") :: Frame
+const TextLabel = Frame:WaitForChild("TextLabel") :: TextLabel
 
-local DialogueView = {}
+const DialogueView = {}
 
 function DialogueView.Show()
 	UI.Enabled = true

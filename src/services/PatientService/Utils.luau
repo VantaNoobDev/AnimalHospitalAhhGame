@@ -58,7 +58,7 @@ PatientDefinitions.Species = {
 			"Splint",
 			"Antibiotic",
 		},
-		CorrectRoom = "CheckIn",
+		CorrectRoom = "Quarantine",
 	} :: PatientTemplate,
 
 	Bird = {

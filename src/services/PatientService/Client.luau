@@ -47,10 +47,10 @@ PatientResolved:On(OnPatientResolved)
 
 -- Outgoing requests --
 function PatientClient.RequestCheckIn(PatientId: string, Admitted: boolean)
-	local CallSuccess = ResolveCheckIn:Call(PatientId, Admitted):Await()
-	assert(CallSuccess, "Failed to resolve check-in for patient " .. PatientId)
+	local CorrectDecision = ResolveCheckIn:Call(PatientId, Admitted):Await()
 
-	PatientClient.CheckInResult:Fire(PatientId)
+	PatientClient.CheckInResult:Fire(PatientId, CorrectDecision)
+	return CorrectDecision
 end
 
 function PatientClient.RequestRoomAssignment(PatientId: string, Room: string)
@@ -58,10 +58,10 @@ function PatientClient.RequestRoomAssignment(PatientId: string, Room: string)
 end
 
 function PatientClient.RequestTreatment(PatientId: string, TreatmentId: string)
-	local CallSuccess = ApplyTreatment:Call(PatientId, TreatmentId):Await()
-	assert(CallSuccess, "Failed to apply treatment for patient " .. PatientId)
+	local IsValid = ApplyTreatment:Call(PatientId, TreatmentId):Await()
 
-	PatientClient.TreatmentResult:Fire(PatientId)
+	PatientClient.TreatmentResult:Fire(PatientId, IsValid)
+	return IsValid
 end
 
 -- Reads --

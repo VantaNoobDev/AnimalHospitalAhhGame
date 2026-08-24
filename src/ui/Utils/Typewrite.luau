@@ -1,30 +1,7 @@
 --!strict
 --!native
 
--- RichText cannot safely reveal partial tags, so the text is split into tags and characters first.
-const function ParseStructure(Text: string)
-	const Structure = {}
-	local i = 1
-
-	while i <= #Text do
-		if Text:sub(i, i) == "<" then
-			const TagEnd = Text:find(">", i)
-			if TagEnd then
-				const Tag = Text:sub(i, TagEnd)
-				table.insert(Structure, { type = "tag", content = Tag })
-				i = TagEnd + 1
-			else
-				table.insert(Structure, { type = "char", content = Text:sub(i, i) })
-				i = i + 1
-			end
-		else
-			table.insert(Structure, { type = "char", content = Text:sub(i, i) })
-			i = i + 1
-		end
-	end
-
-	return Structure
-end
+const ParseStructure = require(script.Parent:WaitForChild("ParseStructure"))
 
 const Typewrite = {}
 

@@ -50,13 +50,26 @@ const function PickRandomSpecies(): PatientDefinitions.PatientTemplate
 	return SpeciesList[math.random(1, #SpeciesList)]
 end
 
+-- Validation --
+const ValidRooms: { [string]: boolean } = {
+	CheckIn = true,
+	GeneralCare = true,
+	OperatingRoom = true,
+	Quarantine = true,
+}
+
+const function IsValidRoom(Room: string): boolean
+	return ValidRooms[Room] == true
+end
+
 -- Public API --
 function PatientService.SpawnPatient(AnomalyChance: number): ActivePatient
 	local Template
 	if GameConfig.Patients.RandomSpecies then
 		Template = PickRandomSpecies()
 	else
-		Template = PatientDefinitions.Species
+		-- Use a concrete template even when random species are disabled.
+		Template = PatientDefinitions.Species.Dog
 	end
 	const IsAnomaly = math.random() < AnomalyChance
 
@@ -102,6 +115,10 @@ function PatientService.ResolveCheckIn(PatientId: string, PlayerAdmitted: boolea
 end
 
 function PatientService.AssignRoom(PatientId: string, Room: PatientDefinitions.RoomId): boolean
+	if not IsValidRoom(Room) then
+		return false
+	end
+
 	local Patient = ActivePatients[PatientId]
 
 	if not Patient or (GameConfig.Patients.RequireCheckInBeforeRoom and not Patient.Registered) or Patient.Treated then
@@ -167,17 +184,20 @@ end
 -- Red Functions --
 ResolveCheckIn:SetCallback(function(Player: Player, PatientId: string, PlayerAdmitted: boolean)
 	warn(Player.Name .. " has resolved the check in.")
-	PatientService.ResolveCheckIn(PatientId, PlayerAdmitted)
+	return PatientService.ResolveCheckIn(PatientId, PlayerAdmitted)
 end)
 
 ApplyTreatment:SetCallback(function(Player: Player, PatientId: string, TreatmentId: string)
 	warn(Player.Name .. " has applied treatment.")
-	PatientService.ApplyTreatment(PatientId, TreatmentId :: PatientDefinitions.TreatmentId)
+	return PatientService.ApplyTreatment(PatientId, TreatmentId :: PatientDefinitions.TreatmentId)
 end)
 
 -- Red Events --
-AssignRoom:On(function(Player: Player, PatientId: string, Room: PatientDefinitions.RoomId)
-	assert(Room, "Invalid room.")
+AssignRoom:On(function(Player: Player, PatientId: string, Room: string)
+	if not IsValidRoom(Room) then
+		warn("PatientService.AssignRoom: invalid room from " .. Player.Name)
+		return
+	end
 
 	warn(Player.Name .. " has assigned a room.")
 	PatientService.AssignRoom(PatientId, Room :: PatientDefinitions.RoomId)

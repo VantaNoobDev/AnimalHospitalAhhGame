@@ -25,7 +25,7 @@ const function OnPlayerAdded(Player: Player)
 	task.delay(10, function()
 		DialogueService.Start(
 			Player,
-			"This is an _cs_intro_ce_ for the game. It will explain the _rs_basics_re_ of how to play and what to do."
+			"This is an _cs_intro_cs_ for the game. It will explain the _rs_basics_rs_ of how to play and what to do."
 		)
 	end)
 end

@@ -66,10 +66,9 @@ function SanityService.Restore(Player: Player, Amount: number)
 	end
 
 	State.Value = ClampSanity(State.Value + Amount)
+	State.LastReplicatedValue = State.Value
 
 	SanityService.SanityChanged:Fire(Player, State.Value)
-
-	State.LastReplicatedValue = State.Value
 	SanityChanged:Fire(Player, State.Value)
 end
 

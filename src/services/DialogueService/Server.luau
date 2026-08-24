@@ -13,7 +13,7 @@ const InitializedPlayers: { [Player]: boolean } = setmetatable({}, { __mode = "k
 
 function DialogueService.Start(Player: Player, Text: string)
 	if not InitializedPlayers[Player] then
-		Initializer:Initialize(Player)
+		(Initializer :: any):Initialize(Player)
 		InitializedPlayers[Player] = true
 	end
 

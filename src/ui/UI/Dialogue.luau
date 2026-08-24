@@ -5,7 +5,7 @@ const RunService = game:GetService("RunService")
 const ServerStorage = game:GetService("ServerStorage")
 
 if not RunService:IsServer() then
-	return
+	return {}
 end
 
 const Dialogue = {}

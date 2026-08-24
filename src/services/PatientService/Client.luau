@@ -8,8 +8,8 @@ const Signal = require(ReplicatedStorage.Packages.Signal)
 -- Red networking --
 const PatientSpawned = require(ReplicatedStorage.Network.PatientSpawned):Client()
 const PatientResolved = require(ReplicatedStorage.Network.PatientResolved):Client()
-const ResolveCheckIn = require(ReplicatedStorage.Network.ResolveCheckIn)
 const AssignRoom = require(ReplicatedStorage.Network.AssignRoom):Client()
+const ResolveCheckIn = require(ReplicatedStorage.Network.ResolveCheckIn)
 const ApplyTreatment = require(ReplicatedStorage.Network.ApplyTreatment)
 
 const PatientClient = {}
@@ -22,7 +22,7 @@ export type VisiblePatient = {
 }
 
 -- States --
-local KnownPatients: { [string]: VisiblePatient } = {}
+const KnownPatients: { [string]: VisiblePatient } = {}
 
 PatientClient.PatientSpawned = Signal.new()
 PatientClient.PatientResolved = Signal.new()
@@ -66,13 +66,13 @@ end
 
 -- Reads --
 function PatientClient.GetPatient(PatientId: string): VisiblePatient?
-	return KnownPatients[PatientId]
+	return table.clone(KnownPatients[PatientId])
 end
 
 function PatientClient.GetAllPatients(): {
 	[string]: VisiblePatient,
 }
-	return KnownPatients
+	return table.clone(KnownPatients)
 end
 
 return PatientClient

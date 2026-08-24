@@ -9,7 +9,6 @@ const StartDialogue = require(ReplicatedStorage.Network.StartDialogue):Server()
 
 const DialogueService = {}
 
--- Weak keys prevent departed players from being retained by this service state.
 const InitializedPlayers: { [Player]: boolean } = setmetatable({}, { __mode = "k" }) :: { [Player]: boolean }
 
 function DialogueService.Start(Player: Player, Text: string)
@@ -18,7 +17,6 @@ function DialogueService.Start(Player: Player, Text: string)
 		InitializedPlayers[Player] = true
 	end
 
-	-- Give the cloned LocalScript/UI a chance to initialize before sending its first event.
 	task.delay(GameConfig.Dialogue.InitializationDelay, function()
 		if Player.Parent then
 			StartDialogue:Fire(Player, { Text = Text })

@@ -22,7 +22,7 @@ type LocalShiftState = {
 }
 
 -- States --
-local State: LocalShiftState = {
+const State: LocalShiftState = {
 	Number = 0,
 	TimeRemaining = 0,
 	Active = false,

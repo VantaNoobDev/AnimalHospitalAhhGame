@@ -12,11 +12,11 @@ const AnomalyDetectionService = require(script.Parent.Parent.AnomalyService.Anom
 -- Red networking --
 const PatientSpawned = require(ReplicatedStorage.Network.PatientSpawned):Server()
 const PatientResolved = require(ReplicatedStorage.Network.PatientResolved):Server()
-const ResolveCheckIn = require(ReplicatedStorage.Network.ResolveCheckIn)
 const AssignRoom = require(ReplicatedStorage.Network.AssignRoom):Server()
+const ResolveCheckIn = require(ReplicatedStorage.Network.ResolveCheckIn)
 const ApplyTreatment = require(ReplicatedStorage.Network.ApplyTreatment)
 
-local PatientService = {}
+const PatientService = {}
 
 -- Types --
 export type ActivePatient = {
@@ -52,7 +52,12 @@ end
 
 -- Public API --
 function PatientService.SpawnPatient(AnomalyChance: number): ActivePatient
-	const Template = PickRandomSpecies()
+	local Template
+	if GameConfig.Patients.RandomSpecies then
+		Template = PickRandomSpecies()
+	else
+		Template = PatientDefinitions.Species
+	end
 	const IsAnomaly = math.random() < AnomalyChance
 
 	const Patient: ActivePatient = {
@@ -171,18 +176,8 @@ ApplyTreatment:SetCallback(function(Player: Player, PatientId: string, Treatment
 end)
 
 -- Red Events --
-AssignRoom:On(function(Player: Player, PatientId: string, Room: string)
-	local ValidRooms = {
-		CheckIn = true,
-		GeneralCare = true,
-		OperatingRoom = true,
-		Quarantine = true,
-	}
-
-	if not ValidRooms[Room] then
-		warn("PatientService.AssignRoom: invalid room from " .. Player.Name)
-		return
-	end
+AssignRoom:On(function(Player: Player, PatientId: string, Room: PatientDefinitions.RoomId)
+	assert(Room, "Invalid room.")
 
 	warn(Player.Name .. " has assigned a room.")
 	PatientService.AssignRoom(PatientId, Room :: PatientDefinitions.RoomId)

@@ -4,6 +4,7 @@
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Signal = require(ReplicatedStorage.Packages.Signal)
+const GameSettings = require(ReplicatedStorage.Shared.Config:WaitForChild("GameConfig"))
 
 -- Red networking --
 const SanityChanged = require(ReplicatedStorage.Network.SanityChanged):Client()
@@ -11,9 +12,9 @@ const SanityChanged = require(ReplicatedStorage.Network.SanityChanged):Client()
 const SanityClient = {}
 
 -- Configuration --
-const MAX_SANITY: number = 100
-const WARNING_THRESHOLD: number = 40
-const CRITICAL_THRESHOLD: number = 15
+const MAX_SANITY: number = GameSettings.Sanity.Max
+const WARNING_THRESHOLD: number = GameSettings.Sanity.WarningThreshold
+const CRITICAL_THRESHOLD: number = GameSettings.Sanity.CriticalThreshold
 
 -- States --
 local CurrentSanity: number = MAX_SANITY

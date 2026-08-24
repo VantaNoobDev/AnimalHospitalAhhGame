@@ -22,7 +22,6 @@ type SanityState = {
 }
 
 -- States --
--- Weak keys let departed Player instances disappear without leaving stale state behind.
 const PlayerSanity: {
 	[Player]: SanityState,
 } = setmetatable({}, { __mode = "k" }) :: { [Player]: SanityState }
@@ -104,7 +103,10 @@ RunService.Heartbeat:Connect(function(DeltaTime: number)
 	if GameConfig.Sanity.PassiveDrainEnabled then
 		for Player, State in PlayerSanity do
 			if State.Value > 0 then
-				SanityService.Drain(Player, GameConfig.Sanity.BaseDrainPerMinute / 60 * State.DrainMultiplier * DeltaTime)
+				SanityService.Drain(
+					Player,
+					GameConfig.Sanity.BaseDrainPerMinute / 60 * State.DrainMultiplier * DeltaTime
+				)
 			end
 		end
 	end

@@ -18,6 +18,8 @@ const GameConfig = {
 
 	Sanity = {
 		Max = 100,
+		WarningThreshold = 40,
+		CriticalThreshold = 15,
 		BaseDrainPerMinute = 9,
 		DrainScalePerShift = 0.03,
 		ReplicationInterval = 0.1,
@@ -57,4 +59,10 @@ const GameConfig = {
 }
 
 table.freeze(GameConfig)
+table.freeze(GameConfig.Anomalies)
+table.freeze(GameConfig.Classes)
+table.freeze(GameConfig.Dialogue)
+table.freeze(GameConfig.Patients)
+table.freeze(GameConfig.Sanity)
+table.freeze(GameConfig.Shift)
 return GameConfig

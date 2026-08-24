@@ -1,7 +1,7 @@
 --!strict
 --!native
 
-local PatientDefinitions = {}
+const PatientDefinitions = {}
 
 -- Types --
 
@@ -79,37 +79,37 @@ PatientDefinitions.Species = {
 PatientDefinitions.Traits = {
 	{
 		Id = "NoBlink",
-		Description = "hasn't blinked the entire check-in",
+		Description = "Hasn't blinked the entire check-in",
 		Weight = 0.35,
 	} :: Trait,
 
 	{
 		Id = "WrongShadow",
-		Description = "shadow doesn't match its posture",
+		Description = "Shadow doesn't match its posture",
 		Weight = 0.4,
 	} :: Trait,
 
 	{
 		Id = "RepeatsPhrase",
-		Description = "repeats the same line if you ask twice",
+		Description = "Repeats the same line if you ask twice",
 		Weight = 0.3,
 	} :: Trait,
 
 	{
 		Id = "ColdToTouch",
-		Description = "temperature reads abnormally low on scan",
+		Description = "Temperature reads abnormally low on scan",
 		Weight = 0.45,
 	} :: Trait,
 
 	{
 		Id = "StaresAtCamera",
-		Description = "looks directly at the security camera",
+		Description = "Looks directly at the security camera",
 		Weight = 0.5,
 	} :: Trait,
 
 	{
 		Id = "WrongFileNumber",
-		Description = "intake file number doesn't match the ledger",
+		Description = "Intake file number doesn't match the ledger",
 		Weight = 0.4,
 	} :: Trait,
 }

@@ -1,7 +1,7 @@
 --!strict
 --!native
 
-local DialogueEnums = {
+const DialogueEnums = {
 	Colors = {
 		cs = Color3.fromRGB(0, 255, 255),
 		rs = Color3.fromRGB(255, 0, 0),

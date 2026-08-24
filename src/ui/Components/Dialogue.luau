@@ -17,6 +17,7 @@ function Dialogue.SendText(Line: string)
 		View:Show()
 	end
 	if not View:GetStatus() then
+		TextLabel.Text = ""
 		View:Show()
 	end
 

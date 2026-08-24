@@ -7,7 +7,7 @@ const ReplicatedStorage = game:GetService("ReplicatedStorage")
 const PatientDefinitions = require(ReplicatedStorage.Shared.Services.PatientService.PatientServiceUtils)
 const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
-const AnomalyDetectionService = {}
+const AnomalyService = {}
 
 -- Private API --
 -- Fisher-Yates keeps the trait selection unbiased before the requested amount is taken.
@@ -24,7 +24,7 @@ const function ShuffledTraitPool(): { PatientDefinitions.Trait }
 end
 
 -- Public API --
-function AnomalyDetectionService.RollTraits(IsAnomaly: boolean): { PatientDefinitions.Trait }
+function AnomalyService.RollTraits(IsAnomaly: boolean): { PatientDefinitions.Trait }
 	const Pool = ShuffledTraitPool()
 
 	if IsAnomaly then
@@ -58,7 +58,7 @@ function AnomalyDetectionService.RollTraits(IsAnomaly: boolean): { PatientDefini
 	return {}
 end
 
-function AnomalyDetectionService.GetVisibleDescriptions(Traits: { PatientDefinitions.Trait }): { string }
+function AnomalyService.GetVisibleDescriptions(Traits: { PatientDefinitions.Trait }): { string }
 	const Descriptions: { string } = {}
 
 	for _, TraitData in Traits do
@@ -68,7 +68,7 @@ function AnomalyDetectionService.GetVisibleDescriptions(Traits: { PatientDefinit
 	return Descriptions
 end
 
-function AnomalyDetectionService.GetSuspicionScore(Traits: { PatientDefinitions.Trait }): number
+function AnomalyService.GetSuspicionScore(Traits: { PatientDefinitions.Trait }): number
 	local Total: number = 0
 
 	for _, TraitData in Traits do
@@ -78,4 +78,4 @@ function AnomalyDetectionService.GetSuspicionScore(Traits: { PatientDefinitions.
 	return math.min(Total, 1)
 end
 
-return AnomalyDetectionService
+return AnomalyService

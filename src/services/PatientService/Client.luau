@@ -47,21 +47,29 @@ PatientResolved:On(OnPatientResolved)
 
 -- Outgoing requests --
 function PatientClient.RequestCheckIn(PatientId: string, Admitted: boolean)
-	local CorrectDecision = ResolveCheckIn:Call(PatientId, Admitted):Await()
+	local Success, CorrectDecision = ResolveCheckIn:Call(PatientId, Admitted):Await()
+
+	if not Success then
+		return nil
+	end
 
 	PatientClient.CheckInResult:Fire(PatientId, CorrectDecision)
 	return CorrectDecision
 end
 
-function PatientClient.RequestRoomAssignment(PatientId: string, Room: string)
-	AssignRoom:Fire(PatientId, Room)
-end
-
 function PatientClient.RequestTreatment(PatientId: string, TreatmentId: string)
-	local IsValid = ApplyTreatment:Call(PatientId, TreatmentId):Await()
+	local Success, IsValid = ApplyTreatment:Call(PatientId, TreatmentId):Await()
+
+	if not Success then
+		return nil
+	end
 
 	PatientClient.TreatmentResult:Fire(PatientId, IsValid)
 	return IsValid
+end
+
+function PatientClient.RequestRoomAssignment(PatientId: string, Room: string)
+	AssignRoom:Fire(PatientId, Room)
 end
 
 -- Reads --

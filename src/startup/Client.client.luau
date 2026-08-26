@@ -1,21 +1,18 @@
---!strict
 --!native
 
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
-const Require = require(ReplicatedStorage.Shared.Modules.Require)
+const Require = require(ReplicatedStorage.Shared.Modules.Require) :: any
 
-const Services = Require(ReplicatedStorage, { "Shared", "Services" })
-const Controllers = Require(ReplicatedStorage, { "UI", "Controllers" })
+const Services = Require(ReplicatedStorage, { "Shared", "Services" }) :: any
+const Controllers = Require(ReplicatedStorage, { "UI", "Controllers" }) :: any
 
-const PatientService = require(Require(Services, { "PatientService", "PatientServiceClient" }))
-const ClassService = require(Require(Services, { "ClassService", "ClassServiceClient" }))
-const SanityService = require(Require(Services, { "SanityService", "SanityServiceClient" }))
-const ShiftService = require(Require(Services, { "ShiftService", "ShiftServiceClient" }))
+const PatientService = require(Require(Services, { "PatientService", "PatientServiceClient" })) :: any
+const ClassService = require(Require(Services, { "ClassService", "ClassServiceClient" })) :: any
+const SanityService = require(Require(Services, { "SanityService", "SanityServiceClient" })) :: any
+const ShiftService = require(Require(Services, { "ShiftService", "ShiftServiceClient" })) :: any
 
-const DialogueController = require(Require(Controllers, { "DialogueController" }))
+const DialogueController = require(Require(Controllers, { "DialogueController" })) :: any
 
-assert(PatientService, "PatientService not found")
-assert(ClassService, "ClassService not found")
-assert(SanityService, "SanityService not found")
-assert(ShiftService, "ShiftService not found")
-assert(DialogueController, "DialogueModule not found")
+const MultipleAsserts = require(Require(ReplicatedStorage, { "Shared, Modules, MultipleAsserts" })) :: any
+
+MultipleAsserts.All({ PatientService, ClassService, SanityService, ShiftService, DialogueController }, "Not found.")

@@ -2,22 +2,26 @@
 --!native
 
 const Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 const RunService = game:GetService("RunService")
+
+const Require = require(ReplicatedStorage.Shared:WaitForChild("Modules"):WaitForChild("Require")) :: any
+
 const Services = game:GetService("ServerScriptService").Services
 
-const PatientService = require(Services:WaitForChild("PatientService"):WaitForChild("PatientServiceServer"))
-const SanityService = require(Services:WaitForChild("SanityService"):WaitForChild("SanityServiceServer"))
-const ShiftService = require(Services:WaitForChild("ShiftService"):WaitForChild("ShiftServiceServer"))
-const AnomalyService = require(Services:WaitForChild("AnomalyService"):WaitForChild("AnomalyServiceServer"))
-const ClassService = require(Services:WaitForChild("ClassService"):WaitForChild("ClassServiceServer"))
-const DialogueService = require(Services:WaitForChild("DialogueService"):WaitForChild("DialogueServiceServer"))
+const PatientService = require(Require(Services, { "PatientService", "PatientServiceServer" })) :: any
+const SanityService = require(Require(Services, { "SanityService", "SanityServiceServer" })) :: any
+const ShiftService = require(Require(Services, { "ShiftService", "ShiftServiceServer" })) :: any
+const AnomalyService = require(Require(Services, { "AnomalyService", "AnomalyServiceServer" })) :: any
+const ClassService = require(Require(Services, { "ClassService", "ClassServiceServer" })) :: any
+const DialogueService = require(Require(Services, { "DialogueService", "DialogueServiceServer" })) :: any
 
-assert(PatientService, "PatientService not found")
-assert(SanityService, "SanityService not found")
-assert(ShiftService, "ShiftService not found")
-assert(AnomalyService, "AnomalyService not found")
-assert(ClassService, "ClassService not found")
-assert(DialogueService, "DialogueService not found")
+const MultipleAsserts = require(Require(ReplicatedStorage, { "Shared", "Modules", "MultipleAsserts" })) :: any
+
+MultipleAsserts(
+	{ PatientService, SanityService, ShiftService, AnomalyService, ClassService, DialogueService },
+	"Not found."
+)
 
 const function OnPlayerAdded(Player: Player)
 	ClassService.InitPlayer(Player)

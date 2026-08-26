@@ -3,9 +3,12 @@
 
 const Players = game:GetService("Players")
 
+const Require =
+	require(game:GetService("ReplicatedStorage").Shared:WaitForChild("Modules"):WaitForChild("Require")) :: any
+
 const LocalPlayer = assert(Players.LocalPlayer, "LocalPlayer is nil")
 const PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-const UI = PlayerGui:WaitForChild("DialogueUI") :: ScreenGui
+const UI = Require(PlayerGui, { "DialogueUI" }) :: ScreenGui
 const Frame = UI:WaitForChild("Frame") :: Frame
 const TextLabel = Frame:WaitForChild("TextLabel") :: TextLabel
 

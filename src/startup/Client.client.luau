@@ -1,3 +1,4 @@
+--!strict
 --!native
 
 const ReplicatedStorage = game:GetService("ReplicatedStorage")

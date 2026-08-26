@@ -8,7 +8,7 @@ const Require =
 
 const LocalPlayer = assert(Players.LocalPlayer, "LocalPlayer is nil")
 const PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-const UI = Require(PlayerGui, { "DialogueUI" }) :: ScreenGui
+const UI = Require(PlayerGui, { "DialogueUI" }, 15) :: ScreenGui
 const Frame = UI:WaitForChild("Frame") :: Frame
 const TextLabel = Frame:WaitForChild("TextLabel") :: TextLabel
 

@@ -135,7 +135,7 @@ function ClassService.AddExp(Player: Player, ClassId: string, Amount: number)
 end
 
 PurchaseClass:SetCallback(function(Player: Player, ClassId: string)
-	ClassService.PurchaseClass(Player, ClassId)
+	return ClassService.PurchaseClass(Player, ClassId)
 end)
 
 function ClassService.GetPerkValue(Player: Player, ClassId: string): number

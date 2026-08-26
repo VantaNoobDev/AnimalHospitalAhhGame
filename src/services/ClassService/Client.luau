@@ -56,10 +56,10 @@ ClassLeveledUp:On(OnClassLeveledUp)
 
 -- Outgoing requests --
 function ClassClient.RequestPurchase(ClassId: string)
-	const CallSuccess = PurchaseClass:Call(ClassId):Await()
+	local Success, DidPurchase = PurchaseClass:Call(ClassId):Await()
 
-	if not CallSuccess then
-		ClassClient.PurchaseFailed:Fire(ClassId, "Network request failed")
+	if not Success or not DidPurchase then
+		ClassClient.PurchaseFailed:Fire(ClassId, "Purchase failed")
 		return
 	end
 end

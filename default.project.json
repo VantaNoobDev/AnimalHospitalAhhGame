@@ -40,6 +40,9 @@
         },
         "Modules": {
           "$className": "Folder",
+          "MultipleAsserts": {
+            "$path": "src/modules/MultipleAsserts.luau"
+          },
           "Require": {
             "$path": "src/modules/Require.luau"
           }

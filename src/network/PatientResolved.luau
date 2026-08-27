@@ -1,13 +1,12 @@
 --!strict
 --!native
 
--- Services & Modules --
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Red = require(ReplicatedStorage.Packages.Red)
 
-
--- Network Contract --
+--// Contract
 return Red.Event("PatientResolved", function(PatientId)
 	assert(type(PatientId) == "string", "Expected PatientId to be a string, got " .. typeof(PatientId))
 

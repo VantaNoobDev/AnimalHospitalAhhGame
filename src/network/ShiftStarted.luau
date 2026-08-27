@@ -1,13 +1,12 @@
 --!strict
 --!native
 
--- Services & Modules --
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Red = require(ReplicatedStorage.Packages.Red)
 
-
--- Network Contract --
+--// Contract
 return Red.Event("ShiftStarted", function(ShiftNumber)
 	assert(type(ShiftNumber) == "number", "ShiftStarted: ShiftNumber must be a number")
 

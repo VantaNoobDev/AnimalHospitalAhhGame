@@ -3,7 +3,7 @@
 
 const PatientDefinitions = {}
 
--- Types --
+--// Types
 
 export type TreatmentId = "Bandage" | "Splint" | "Antibiotic" | "Sedative" | "Surgery"
 
@@ -28,7 +28,7 @@ export type SpeciesMap = {
 	[string]: PatientTemplate,
 }
 
--- Patient species --
+--// Patient definitions
 
 PatientDefinitions.Species = {
 	Dog = {
@@ -71,7 +71,7 @@ PatientDefinitions.Species = {
 	} :: PatientTemplate,
 } :: SpeciesMap
 
--- Traits --
+--// Anomaly traits
 
 -- Anomaly patients roll 2-4 traits.
 -- Normal patients rarely receive one low-weight red herring.

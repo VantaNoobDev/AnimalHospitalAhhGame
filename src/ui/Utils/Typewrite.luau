@@ -1,14 +1,21 @@
 --!strict
 --!native
 
+--// Dependencies
 const ParseStructure = require(script.Parent:WaitForChild("ParseStructure"))
 
 const Typewrite = {}
 
+--// State
+const ActiveTokens: { [TextLabel]: {} } = setmetatable({}, { __mode = "k" }) :: any
+
+--// Public API
 function Typewrite.Type(TextLabel: TextLabel, Text: string, Speed: number?): RBXScriptSignal
 	Speed = Speed or 0.03
 
 	const Finished = Instance.new("BindableEvent")
+	const Token = {}
+	ActiveTokens[TextLabel] = Token
 
 	task.spawn(function()
 		const Structure = ParseStructure(Text)
@@ -16,6 +23,11 @@ function Typewrite.Type(TextLabel: TextLabel, Text: string, Speed: number?): RBX
 		const OpenTags = {}
 
 		for _, Element in ipairs(Structure) do
+			if ActiveTokens[TextLabel] ~= Token or not TextLabel.Parent then
+				Finished:Fire()
+				Finished:Destroy()
+				return
+			end
 			if Element.type == "tag" then
 				if Element.content:sub(2, 2) == "/" then
 					table.remove(OpenTags)
@@ -38,12 +50,19 @@ function Typewrite.Type(TextLabel: TextLabel, Text: string, Speed: number?): RBX
 		end
 
 		TextLabel.Text = DisplayText
+		if ActiveTokens[TextLabel] == Token then
+			ActiveTokens[TextLabel] = nil
+		end
 
 		Finished:Fire()
 		Finished:Destroy()
 	end)
 
 	return Finished.Event
+end
+
+function Typewrite.Cancel(TextLabel: TextLabel)
+	ActiveTokens[TextLabel] = nil
 end
 
 return Typewrite

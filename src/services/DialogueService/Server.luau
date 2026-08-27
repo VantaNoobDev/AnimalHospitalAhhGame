@@ -1,31 +1,46 @@
 --!strict
---!native
 
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
-const Initializer = require(ReplicatedStorage:WaitForChild("UI"):WaitForChild("UI"):WaitForChild("Dialogue"))
-
+const Trove = require(ReplicatedStorage.Packages.Trove)
+const Initializer = require(ReplicatedStorage.UI.UI.Dialogue)
 const StartDialogue = require(ReplicatedStorage.Network.StartDialogue):Server()
 
 const DialogueService = {}
 
-const InitializedPlayers: { [Player]: boolean } = setmetatable({}, { __mode = "k" }) :: { [Player]: boolean }
+--// State
+const PlayerTroves: { [Player]: any } = setmetatable({}, { __mode = "k" }) :: any
 
+--// Public API
 function DialogueService.Start(Player: Player, Text: string)
-	if not InitializedPlayers[Player] then
-		(Initializer :: any):Initialize(Player)
-		InitializedPlayers[Player] = true
+	DialogueService.RemovePlayer(Player)
+	const PlayerTrove = Trove.new()
+	PlayerTroves[Player] = PlayerTrove
+	if not Player.Parent then
+		return
 	end
-
-	task.delay(GameConfig.Dialogue.InitializationDelay, function()
-		if Player.Parent then
+	(Initializer :: any):Initialize(Player)
+	PlayerTrove:Add(task.delay(GameConfig.Dialogue.InitializationDelay, function()
+		if Player.Parent and PlayerTroves[Player] == PlayerTrove then
 			StartDialogue:Fire(Player, { Text = Text })
 		end
-	end)
+	end))
 end
 
 function DialogueService.RemovePlayer(Player: Player)
-	InitializedPlayers[Player] = nil
+	const PlayerTrove = PlayerTroves[Player]
+	if PlayerTrove then
+		PlayerTrove:Destroy()
+		PlayerTroves[Player] = nil
+	end
+end
+
+--// Cleanup
+function DialogueService.Destroy()
+	for Player in PlayerTroves do
+		DialogueService.RemovePlayer(Player)
+	end
 end
 
 return DialogueService

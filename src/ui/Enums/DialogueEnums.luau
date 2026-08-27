@@ -1,11 +1,13 @@
 --!strict
 --!native
 
+--// Types
 type Enums = {
 	read Colors: { [string]: Color3 },
 	read CommonDialogues: { string },
 }
 
+--// Dialogue constants
 const DialogueEnums: Enums = {
 	Colors = {
 		cs = Color3.fromRGB(0, 255, 255),

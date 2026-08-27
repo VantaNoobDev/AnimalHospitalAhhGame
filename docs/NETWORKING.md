@@ -1,42 +1,37 @@
-# Networking
+# Networking and security
 
-The project uses Red for network events and remote functions. Each module in `src/network/` defines a named network contract and validates arguments at the boundary.
+Red modules in `src/network` define serialization contracts. Contracts reject malformed types and invalid enums early; server services repeat important state checks because contract validation alone is not authorization.
 
-## Events
+## Client requests
 
-These are one-way notifications:
+| Remote | Kind | Request | Server result |
+| --- | --- | --- | --- |
+| `ResolveCheckIn` | Function | patient ID, admit decision | correct decision boolean |
+| `AssignRoom` | Event | patient ID, room enum | none |
+| `ApplyTreatment` | Function | patient ID, treatment enum | success boolean |
+| `PurchaseClass` | Function | class ID | purchase boolean |
+| `GetPatientSnapshot` | Function | none | safe visible patients for late join |
+| `GetShiftState` | Function | none | current shift number, time, and status |
 
-- `PatientSpawned` - sends visible patient information to clients.
-- `PatientResolved` - announces a resolved patient.
-- `AssignRoom` - requests/announces room assignment depending on the calling side.
-- `ShiftStarted` - announces a new shift number.
-- `ShiftEnded` - announces shift completion and survival status.
-- `SanityChanged` - sends a sanity value.
-- `ClassDataSynced` - sends the complete class data set.
-- `ClassPurchased` - announces a purchased class and its entry.
-- `ClassLeveledUp` - announces a new level.
-- `StartDialogue` - sends dialogue payloads.
+Requests are accepted only when their identifiers are bounded, their enum values are known, the player is present, the relevant shift/state allows the action, and the player's token bucket has capacity. Purchases additionally use a per-player lock and verify persisted coins before deduction.
 
-## Remote functions
+## Server events
 
-- `ResolveCheckIn(PatientId, Admitted)` - check-in request.
-- `ApplyTreatment(PatientId, TreatmentId)` - treatment request.
-- `PurchaseClass(ClassId)` - class purchase request.
+| Remote | Audience | Purpose |
+| --- | --- | --- |
+| `PatientSpawned` | All players | Safe visible patient description |
+| `PatientResolved` | All players | Remove patient from client state |
+| `SanityChanged` | One player | Batched authoritative sanity value |
+| `ShiftStarted` | All or joining player | Begin local presentation timer |
+| `ShiftEnded` | All players | End local shift presentation |
+| `StartDialogue` | One player | Display validated dialogue payload |
 
-### Callback contract
+Coins, class ownership, class experience, and statistics are not duplicated as Red events. `DataServiceTyped` persists and replicates those fields.
 
-For these functions, the server callback is currently fire-and-forget. A successful callback returns no value (`nil`). Do not accidentally return internal booleans or unrelated values unless the remote contract is intentionally changed to expose a result.
+## Adding a remote
 
-A network validator should validate data shape and primitive types. Gameplay authorization belongs in the server service itself. For example, a treatment request can have valid strings but still be invalid because the patient is in the wrong room or already resolved.
-
-## Adding a new network contract
-
-1. Create a module in `src/network/` using the same Red pattern as the existing contracts.
-2. Validate every public argument that crosses the client/server boundary.
-3. Keep validators focused on shape/range validation.
-4. Put permission, progression, ownership, and other gameplay checks in the server-side callback/service.
-5. Document the payload and return contract here.
-
-## Validation note
-
-Do not use `if not Value` when `false` is a valid input. For booleans, check `type(Value) == "boolean"` instead. This matters for inputs such as `Admitted = false`.
+1. Define its Red contract in `src/network`.
+2. Validate types, length, ranges, and enums there.
+3. Rate-limit the server handler.
+4. Validate current game state and permission in the server service.
+5. Return minimal information; never send hidden anomaly state or full profiles.

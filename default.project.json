@@ -40,17 +40,32 @@
         },
         "Modules": {
           "$className": "Folder",
-          "MultipleAsserts": {
-            "$path": "src/modules/MultipleAsserts.luau"
+          "NumberUtil": {
+            "$path": "src/modules/NumberUtil.luau"
           },
-          "Require": {
-            "$path": "src/modules/Require.luau"
+          "ObjectPool": {
+            "$path": "src/modules/ObjectPool.luau"
+          },
+          "RateLimiter": {
+            "$path": "src/modules/RateLimiter.luau"
+          },
+          "RequireUtil": {
+            "$path": "src/modules/RequireUtil.luau"
+          },
+          "TableUtil": {
+            "$path": "src/modules/TableUtil.luau"
           }
         },
         "Config": {
           "$className": "Folder",
           "GameConfig": {
             "$path": "src/config/GameConfig.luau"
+          }
+        },
+        "Data": {
+          "$className": "Folder",
+          "Data": {
+            "$path": "src/data/Data.luau"
           }
         }
       },
@@ -62,14 +77,11 @@
         "AssignRoom": {
           "$path": "src/network/AssignRoom.luau"
         },
-        "ClassDataSynced": {
-          "$path": "src/network/ClassDataSynced.luau"
+        "GetPatientSnapshot": {
+          "$path": "src/network/GetPatientSnapshot.luau"
         },
-        "ClassLeveledUp": {
-          "$path": "src/network/ClassLeveledUp.luau"
-        },
-        "ClassPurchased": {
-          "$path": "src/network/ClassPurchased.luau"
+        "GetShiftState": {
+          "$path": "src/network/GetShiftState.luau"
         },
         "PatientResolved": {
           "$path": "src/network/PatientResolved.luau"

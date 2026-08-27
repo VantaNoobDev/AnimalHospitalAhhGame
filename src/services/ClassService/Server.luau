@@ -1,157 +1,151 @@
 --!strict
---!native
 
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
-const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
--- Red networking --
-const ClassDataSynced = require(ReplicatedStorage.Network.ClassDataSynced):Server()
-const ClassPurchased = require(ReplicatedStorage.Network.ClassPurchased):Server()
-const ClassLeveledUp = require(ReplicatedStorage.Network.ClassLeveledUp):Server()
+const Data = require(ReplicatedStorage.Shared.Data.Data).server
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
+const RateLimiter = require(ReplicatedStorage.Shared.Modules.RateLimiter)
 const PurchaseClass = require(ReplicatedStorage.Network.PurchaseClass)
 
 const ClassService = {}
 
--- Types --
+--// Types
 export type ClassDefinition = {
 	read Id: string,
 	read Name: string,
-	read CostCoins: number?, -- Nil means Robux-only.
+	read CostCoins: number,
 	read MaxLevel: number,
-	read PerkValuesByLevel: { number }, -- Index 1 = level 1 value.
+	read PerkValuesByLevel: { number },
 }
 
-export type PlayerClassData = {
-	[string]: { -- ClassId.
-		Owned: boolean,
-		Level: number,
-		Exp: number,
-	},
-}
-
-export type ReadOnlyPlayerClassData = {
-	read [string]: {
-		read Owned: boolean,
-		read Level: number,
-		read Exp: number,
-	},
-}
-
--- Definitions --
-ClassService.Classes = {
-	Intern = {
-		Id = "Intern",
-		Name = "Intern",
-		CostCoins = 0,
-		MaxLevel = 1,
-		PerkValuesByLevel = { 0 },
-	},
-	Nurse = {
+--// Class catalog
+ClassService.Classes = table.freeze({
+	Intern = table.freeze({ Id = "Intern", Name = "Intern", CostCoins = 0, MaxLevel = 1, PerkValuesByLevel = { 0 } }),
+	Nurse = table.freeze({
 		Id = "Nurse",
 		Name = "Nurse",
 		CostCoins = 500,
 		MaxLevel = 5,
-		PerkValuesByLevel = { 0.05, 0.08, 0.11, 0.14, 0.18 }, -- % faster treatment application.
-	},
-	Surgeon = {
+		PerkValuesByLevel = { 0.05, 0.08, 0.11, 0.14, 0.18 },
+	}),
+	Surgeon = table.freeze({
 		Id = "Surgeon",
 		Name = "Surgeon",
 		CostCoins = 2500,
 		MaxLevel = 5,
-		PerkValuesByLevel = { 0.10, 0.16, 0.22, 0.28, 0.35 }, -- % reduced chance of a botched OperatingRoom treatment.
-	},
-	Secretary = {
+		PerkValuesByLevel = { 0.10, 0.16, 0.22, 0.28, 0.35 },
+	}),
+	Secretary = table.freeze({
 		Id = "Secretary",
 		Name = "Secretary",
 		CostCoins = 1200,
 		MaxLevel = 5,
-		PerkValuesByLevel = { 1, 1, 2, 2, 3 }, -- Extra visible trait revealed at check-in.
-	},
-} :: { [string]: ClassDefinition }
+		PerkValuesByLevel = { 1, 1, 2, 2, 3 },
+	}),
+}) :: { [string]: ClassDefinition }
 
-table.freeze(ClassService.Classes)
+--// State
+const Limiter = RateLimiter.new(GameConfig.Security.RemoteBurst, GameConfig.Security.RemoteRefillPerSecond)
+const PurchaseLocks: { [Player]: boolean } = setmetatable({}, { __mode = "k" }) :: any
 
--- States --
-const PlayerClassData: { [Player]: PlayerClassData } = setmetatable({}, { __mode = "k" }) :: { [Player]: PlayerClassData }
-
--- Public API --
-function ClassService.InitPlayer(Player: Player, SavedData: PlayerClassData?)
-	const Data = SavedData or {}
-
-	if GameConfig.Classes.AutoGrantIntern and not Data.Intern then
-		Data.Intern = { Owned = true, Level = 1, Exp = 0 }
+--// Public API
+function ClassService.InitPlayer(Player: Player)
+	const PlayerData = Data.Service:waitForData(Player)
+	if not Player.Parent then
+		return
 	end
-
-	PlayerClassData[Player] = Data
-	ClassDataSynced:Fire(Player, Data)
+	if GameConfig.Classes.AutoGrantIntern and PlayerData.classes.Intern() == nil then
+		PlayerData.classes.Intern({ Owned = true, Level = 1, Exp = 0 })
+	end
 end
 
 function ClassService.RemovePlayer(Player: Player)
-	PlayerClassData[Player] = nil
+	Limiter:Remove(Player)
+	PurchaseLocks[Player] = nil
 end
 
 function ClassService.PurchaseClass(Player: Player, ClassId: string): boolean
-	const Data = PlayerClassData[Player]
+	if PurchaseLocks[Player] or not Limiter:Allow(Player) then
+		return false
+	end
 	const Definition = ClassService.Classes[ClassId]
-
-	if not Data or not Definition then
+	if not Definition then
 		return false
 	end
 
-	if Data[ClassId] and Data[ClassId].Owned and not GameConfig.Classes.AllowRepurchase then
+	PurchaseLocks[Player] = true
+	const Success, Result = pcall(function(): boolean
+		const PlayerData = Data.Service:waitForData(Player)
+		if not Player.Parent then
+			return false
+		end
+		const Existing = PlayerData.classes[ClassId]()
+		if Existing and Existing.Owned and not GameConfig.Classes.AllowRepurchase then
+			return false
+		end
+		const Coins = PlayerData.coins()
+		if Coins < Definition.CostCoins then
+			return false
+		end
+		PlayerData.coins(Coins - Definition.CostCoins)
+		PlayerData.classes[ClassId]({ Owned = true, Level = 1, Exp = 0 })
+		return true
+	end)
+	PurchaseLocks[Player] = nil
+
+	if not Success then
+		warn(`ClassService purchase failed for {Player.Name}: {Result}`)
 		return false
 	end
-
-	const Entry = { Owned = true, Level = 1, Exp = 0 }
-	Data[ClassId] = Entry
-
-	ClassPurchased:Fire(Player, ClassId, Entry)
-	return true
+	return Result
 end
 
 function ClassService.AddExp(Player: Player, ClassId: string, Amount: number)
-	const Data = PlayerClassData[Player]
-	if not Data or not Data[ClassId] or not Data[ClassId].Owned then
-		return
-	end
-
-	const Entry = Data[ClassId]
-	const Definition = ClassService.Classes[ClassId]
-	if not Definition then
-		return
-	end
-
 	if Amount < 0 and not GameConfig.Classes.AllowNegativeExp then
 		return
 	end
-
-	Entry.Exp = math.max(0, Entry.Exp + Amount)
-
-	while Entry.Exp >= GameConfig.Classes.ExpPerLevel and Entry.Level < Definition.MaxLevel do
-		Entry.Exp -= GameConfig.Classes.ExpPerLevel
-		Entry.Level += 1
-		ClassLeveledUp:Fire(Player, ClassId, Entry.Level)
+	const Definition = ClassService.Classes[ClassId]
+	const PlayerData = Data[Player]
+	if not Definition or not PlayerData then
+		return
 	end
-end
+	const Entry = PlayerData.classes[ClassId]()
+	if not Entry or not Entry.Owned then
+		return
+	end
 
-PurchaseClass:SetCallback(function(Player: Player, ClassId: string)
-	return ClassService.PurchaseClass(Player, ClassId)
-end)
+	local Exp = math.max(0, Entry.Exp + Amount)
+	local Level = Entry.Level
+	while Exp >= GameConfig.Classes.ExpPerLevel and Level < Definition.MaxLevel do
+		Exp -= GameConfig.Classes.ExpPerLevel
+		Level += 1
+	end
+	PlayerData.classes[ClassId]({ Owned = true, Level = Level, Exp = Exp })
+end
 
 function ClassService.GetPerkValue(Player: Player, ClassId: string): number
-	const Data = PlayerClassData[Player]
 	const Definition = ClassService.Classes[ClassId]
-
-	if not Data or not Definition or not Data[ClassId] or not Data[ClassId].Owned then
+	const PlayerData = Data[Player]
+	if not Definition or not PlayerData then
 		return 0
 	end
-
-	const Level = Data[ClassId].Level
-	return Definition.PerkValuesByLevel[Level] or 0
+	const Entry = PlayerData.classes[ClassId]()
+	if not Entry or not Entry.Owned then
+		return 0
+	end
+	return Definition.PerkValuesByLevel[Entry.Level] or 0
 end
 
-function ClassService.GetPlayerClassData(Player: Player): ReadOnlyPlayerClassData?
-	return PlayerClassData[Player]
+--// Lifecycle
+function ClassService.Init()
+	PurchaseClass:SetCallback(function(Player: Player, ClassId: string)
+		return ClassService.PurchaseClass(Player, ClassId)
+	end)
+end
+
+function ClassService.Destroy()
+	Limiter:Clear()
 end
 
 return ClassService

@@ -1,6 +1,7 @@
 --!strict
 --!native
 
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
@@ -9,8 +10,10 @@ const View = require(ReplicatedStorage.UI.Views.DialogueView)
 
 const DialogueComponents = {}
 
+--// State
 local MessageId: number = 0
 
+--// Public API
 function DialogueComponents.SendText(Text: string)
 	MessageId += 1
 	const CurrentMessageId = MessageId
@@ -36,6 +39,7 @@ end
 
 function DialogueComponents.Hide()
 	MessageId += 1
+	Typewrite.Cancel(View.GetTextLabel())
 	View.Hide()
 	View.Clear()
 end

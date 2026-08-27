@@ -1,19 +1,18 @@
 --!strict
---!native
 
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
-const Require = require(ReplicatedStorage.Shared.Modules.Require) :: any
+const SharedServices = ReplicatedStorage.Shared.Services
 
-const Services = Require(ReplicatedStorage, { "Shared", "Services" }) :: any
-const Controllers = Require(ReplicatedStorage, { "UI", "Controllers" }) :: any
+const PatientService = require(SharedServices.PatientService.PatientServiceClient)
+const ClassService = require(SharedServices.ClassService.ClassServiceClient)
+const SanityService = require(SharedServices.SanityService.SanityServiceClient)
+const ShiftService = require(SharedServices.ShiftService.ShiftServiceClient)
+const DialogueController = require(ReplicatedStorage.UI.Controllers.DialogueController)
 
-const PatientService = require(Require(Services, { "PatientService", "PatientServiceClient" })) :: any
-const ClassService = require(Require(Services, { "ClassService", "ClassServiceClient" })) :: any
-const SanityService = require(Require(Services, { "SanityService", "SanityServiceClient" })) :: any
-const ShiftService = require(Require(Services, { "ShiftService", "ShiftServiceClient" })) :: any
-
-const DialogueController = require(Require(Controllers, { "DialogueController" })) :: any
-
-const MultipleAsserts = require(Require(ReplicatedStorage, { "Shared, Modules, MultipleAsserts" })) :: any
-
-MultipleAsserts.All({ PatientService, ClassService, SanityService, ShiftService, DialogueController }, "Not found.")
+--// Client startup
+PatientService.Init()
+ClassService.Init()
+SanityService.Init()
+ShiftService.Init()
+DialogueController.Init()

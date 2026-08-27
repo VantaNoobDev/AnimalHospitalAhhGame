@@ -1,7 +1,7 @@
 --!strict
 --!native
 
--- Services & Modules --
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const PatientDefinitions = require(ReplicatedStorage.Shared.Services.PatientService.PatientServiceUtils)
@@ -9,7 +9,7 @@ const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
 const AnomalyService = {}
 
--- Private API --
+--// Internal helpers
 -- Fisher-Yates keeps the trait selection unbiased before the requested amount is taken.
 const function ShuffledTraitPool(): { PatientDefinitions.Trait }
 	const Pool = table.clone(PatientDefinitions.Traits)
@@ -23,7 +23,7 @@ const function ShuffledTraitPool(): { PatientDefinitions.Trait }
 	return Pool
 end
 
--- Public API --
+--// Public API
 function AnomalyService.RollTraits(IsAnomaly: boolean): { PatientDefinitions.Trait }
 	const Pool = ShuffledTraitPool()
 

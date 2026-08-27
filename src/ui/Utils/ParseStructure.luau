@@ -1,12 +1,14 @@
 --!strict
 --!native
 
+--// Types
 export type StructureElement = {
 	type: "tag" | "char",
 	content: string,
 }
 
--- RichText cannot safely reveal partial tags, so the text is split into tags and characters first.
+--// Parser
+-- RichText is split into complete tags and individual visible characters.
 return function(Text: string): { StructureElement }
 	local Structure: { StructureElement } = {}
 	local i = 1

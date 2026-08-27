@@ -4,7 +4,8 @@
   "main": "index.js",
 
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "selene src && npm run build:rojo && rojo build -o AnimalHospitalAhhGame.rbxlx && rojo sourcemap default.project.json -o sourcemap.json",
+    "test": "npm run check",
     "build:rojo": "node tools/genRojoTree.js",
     "watch:rojo": "chokidar \"src/**/*\" -c \"npm run build:rojo\""
   },

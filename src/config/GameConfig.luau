@@ -1,8 +1,8 @@
 --!strict
 --!native
 
--- Central gameplay configuration.
--- Most balancing should be possible by editing this module only.
+--// Balance settings
+-- Most gameplay tuning should happen in this file.
 
 const GameConfig = {
 	Shift = {
@@ -27,6 +27,24 @@ const GameConfig = {
 		PassiveDrainEnabled = true,
 	},
 
+	Economy = {
+		StartingCoins = 1000,
+		CorrectCheckInReward = 15,
+		SuccessfulTreatmentReward = 35,
+	},
+
+	Security = {
+		RemoteBurst = 5,
+		RemoteRefillPerSecond = 3,
+		MaximumIdentifierLength = 64,
+	},
+
+	Data = {
+		ProfileStoreIndex = "AnimalHospital_PlayerData_v1",
+		ProfileKeyPrefix = "PLAYER_",
+		UseMockInStudio = true,
+	},
+
 	Anomalies = {
 		MinTraits = 2,
 		MaxTraits = 4,
@@ -40,7 +58,7 @@ const GameConfig = {
 		RequireCheckInBeforeRoom = true,
 		RequireCorrectRoomForTreatment = true,
 		AllowMultipleCheckInResolutions = false,
-		ClearPatientOnSuccessfulTreatment = false,
+		ClearPatientOnSuccessfulTreatment = true,
 		RandomSpecies = true,
 	},
 
@@ -62,6 +80,9 @@ table.freeze(GameConfig)
 table.freeze(GameConfig.Anomalies)
 table.freeze(GameConfig.Classes)
 table.freeze(GameConfig.Dialogue)
+table.freeze(GameConfig.Economy)
+table.freeze(GameConfig.Security)
+table.freeze(GameConfig.Data)
 table.freeze(GameConfig.Patients)
 table.freeze(GameConfig.Sanity)
 table.freeze(GameConfig.Shift)

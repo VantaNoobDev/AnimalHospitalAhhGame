@@ -1,17 +1,18 @@
 --!strict
 --!native
 
+--// Dependencies
 const Players = game:GetService("Players")
-
-const Require =
-	require(game:GetService("ReplicatedStorage").Shared:WaitForChild("Modules"):WaitForChild("Require")) :: any
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const LocalPlayer = assert(Players.LocalPlayer, "LocalPlayer is nil")
 const PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-const UI = Require(PlayerGui, { "DialogueUI" }, 15) :: ScreenGui
+const Require = require(ReplicatedStorage.Shared.Modules.RequireUtil) :: any
+const UI = Require(PlayerGui, { "DialogueUI" }) :: ScreenGui
 const Frame = UI:WaitForChild("Frame") :: Frame
 const TextLabel = Frame:WaitForChild("TextLabel") :: TextLabel
 
+--// Public API
 const DialogueView = {}
 
 function DialogueView.Show()

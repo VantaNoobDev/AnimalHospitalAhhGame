@@ -1,46 +1,54 @@
-# AnimalHospitalAhhGame
+# Animal Hospital AHH
 
-A Roblox game written in **Luau** and structured with Rojo. The project uses server-authoritative services for gameplay, Red for networking, and a central `GameConfig` module for balancing.
+A server-authoritative Roblox/Luau game foundation for running animal-hospital shifts, identifying anomalies, treating patients, managing sanity, and unlocking persistent classes.
 
-## Quick start
+## Setup
+
+Install the toolchain and packages, then start Rojo:
 
 ```bash
+rokit install
+wally install
+npm install
+npm run build:rojo
 rojo serve
 ```
 
-Then connect the Rojo server from Roblox Studio. To build a place file instead:
+Connect with the Rojo Studio plugin. Data uses mock storage in Studio by default, so local testing does not touch production profiles.
+
+## Quality check
 
 ```bash
-rojo build -o "AnimalHospitalAhhGame.rbxlx"
+npm test
 ```
 
-## Project layout
+This runs Selene and builds a place file with Rojo. Enable Luau's new type solver for `DataServiceTyped` autocomplete and type checking.
 
-- `src/config/GameConfig.luau` - central balancing and gameplay configuration
-- `src/services/` - server/client gameplay services
-- `src/network/` - Red events and remote functions with argument validation
-- `src/ui/` - dialogue UI, controller, view, component, and typewriter utility
-- `src/startup/` - client/server bootstrapping
-- `Packages/` - external dependencies; avoid editing these directly
+## Project map
 
-## Main gameplay flow
+| Path | Purpose |
+| --- | --- |
+| `src/config` | Balance, data, economy, and security settings |
+| `src/data` | Typed persistent player-data schema |
+| `src/modules` | Reusable general-purpose utilities |
+| `src/network` | Red remote contracts and boundary validation |
+| `src/services` | Server gameplay authority and client-facing APIs |
+| `src/startup` | Server/client composition roots |
+| `src/ui` | Dialogue components, controller, view, and formatting |
 
-1. A shift starts.
-2. Patients spawn over time, with anomaly chance increasing by shift.
-3. Players resolve check-in and assign rooms.
-4. Treatments resolve patients when progression requirements are satisfied.
-5. Sanity drains during the shift and reaching zero ends the shift.
-6. Completing the timer successfully ends the shift.
+## Core rules
+
+- The server owns patient, shift, sanity, economy, and class decisions.
+- Remote arguments are untrusted and validated again in the receiving service.
+- Player data is changed through `DataServiceTyped`; do not build a second save cache.
+- Every long-lived connection, thread, or disposable object belongs to a Trove.
+- Repeatedly allocated runtime records should use `ObjectPool` when profiling shows value.
+- Balance changes belong in `GameConfig`.
 
 ## Documentation
 
-- [Configuration](docs/CONFIGURATION.md) - every central setting and what it does
-- [Architecture](docs/ARCHITECTURE.md) - service responsibilities and data flow
-- [Networking](docs/NETWORKING.md) - network events/functions and callback contracts
-
-## Important conventions
-
-- Server code is authoritative. Client requests should be treated as requests, not proof that an action is valid.
-- Most gameplay tuning belongs in `GameConfig.luau`.
-- Network callback handlers that only perform an action should return nothing unless their remote function explicitly has a result contract.
-- Static definition tables may be frozen. Edit their source definitions rather than trying to mutate them at runtime.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Configuration](docs/CONFIGURATION.md)
+- [Networking and security](docs/NETWORKING.md)
+- [Utilities](docs/UTILITIES.md)
+- [Development guide](docs/DEVELOPMENT.md)

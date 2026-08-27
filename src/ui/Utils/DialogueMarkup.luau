@@ -1,16 +1,19 @@
 --!strict
 --!native
 
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const DialogueEnums = require(ReplicatedStorage.UI:WaitForChild("Enums"):WaitForChild("DialogueEnums"))
 
 const DialogueMarkup = {}
 
+--// Internal helpers
 const function EscapeRichText(Text: string): string
 	return (Text:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"))
 end
 
+--// Public API
 function DialogueMarkup.Format(Text: string): string
 	return (
 		Text:gsub(

@@ -1,19 +1,22 @@
 --!strict
 --!native
 
--- Services & Modules --
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Red = require(ReplicatedStorage.Packages.Red)
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
-
--- Network Contract --
+--// Contract
 return Red.Function("PurchaseClass", function(ClassId)
 	assert(type(ClassId) == "string", "PurchaseClass: ClassId must be a string")
+	assert(
+		#ClassId > 0 and #ClassId <= GameConfig.Security.MaximumIdentifierLength,
+		"PurchaseClass: invalid ClassId length"
+	)
 
 	return ClassId
-end, function(ClassId)
-	if not ClassId then
-		return
-	end
+end, function(DidPurchase)
+	assert(type(DidPurchase) == "boolean", "PurchaseClass response must be a boolean")
+	return DidPurchase
 end)

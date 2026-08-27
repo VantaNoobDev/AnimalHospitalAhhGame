@@ -1,14 +1,16 @@
 --!strict
 --!native
 
--- Services & Modules --
+--// Dependencies
 const ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const Red = require(ReplicatedStorage.Packages.Red)
+const GameConfig = require(ReplicatedStorage.Shared.Config.GameConfig)
 
--- Network Contract --
+--// Contract
 return Red.Function("ResolveCheckIn", function(PatientId, Admitted)
 	assert(type(PatientId) == "string", "PatientId must be a string")
+	assert(#PatientId > 0 and #PatientId <= GameConfig.Security.MaximumIdentifierLength, "Invalid PatientId length")
 	assert(type(Admitted) == "boolean", "Admitted must be a boolean")
 
 	return PatientId, Admitted

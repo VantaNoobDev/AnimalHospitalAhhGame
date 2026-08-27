@@ -1,52 +1,35 @@
 # Architecture
 
-## Startup
+## Runtime flow
 
-The startup scripts initialize the project and services for each environment:
+1. `Server.server.luau` requires services and calls each `Init` method once.
+2. `Data.luau` loads and reconciles player profiles through `DataServiceTyped`.
+3. `ShiftService` enables patient interactions and sanity drain for an active shift.
+4. `PatientService` creates pooled patient records and publishes safe display data.
+5. Clients request check-in, room, treatment, or class actions through Red contracts.
+6. Server services validate rate, state, identifier, enum, and economy requirements.
+7. Successful actions update persistent coins/statistics; `DataServiceTyped` replicates them.
+8. Troves release event connections, delayed work, and other lifecycle resources.
 
-- `Client.client.luau` - client bootstrap.
-- `Server.server.luau` - server bootstrap and gameplay service startup.
+## Ownership
 
-## PatientService
+| Component | Owns | Does not trust |
+| --- | --- | --- |
+| `ShiftService` | Active shift and spawn schedule | Client time |
+| `PatientService` | Patient state, decisions, rewards | Patient IDs, rooms, treatments |
+| `SanityService` | Per-player sanity and drain state | Client sanity |
+| `ClassService` | Costs, ownership, levels, perks | Purchase requests |
+| `DataServiceTyped` | Profile session, saving, replication | Client-local data writes |
+| Client services | Presentation state and request APIs | Their own mirrors as authority |
 
-Owns patient lifecycle and server-side patient state. The client module maintains replicated visible patient data, while the server module performs authoritative actions.
+## Lifecycle
 
-Typical lifecycle:
+Services expose `Init` when they connect events and `Destroy` when they own cleanup. Player-specific cleanup is handled from the server composition root. `SanityService` no longer subscribes to `PlayerAdded` independently, preventing the old double initialization.
 
-`spawn -> check-in resolution -> room assignment -> treatment -> resolved/removed`
+## Performance choices
 
-Do not trust a client request alone. The server should verify that the patient exists and that the requested action is valid for its current state.
-
-`Utils.luau` contains shared patient definitions such as species, traits, rooms, and treatments.
-
-## AnomalyService
-
-Rolls patient traits. Anomalous patients receive multiple traits; normal patients may receive low-weight red herrings. It also converts traits into descriptions visible to the player.
-
-## ShiftService
-
-Owns the global shift state and difficulty scaling. The server controls the timer and patient spawning. The client keeps a local presentation timer for UI.
-
-A shift ends successfully when time expires and unsuccessfully when the service is failed, including through sanity depletion.
-
-## SanityService
-
-Tracks sanity per player on the server. Passive drain is applied continuously, but network replication is batched to reduce remote traffic. The client turns replicated values into local signals such as warning and critical thresholds.
-
-## ClassService
-
-Tracks owned classes, levels, and EXP. The server owns class data and broadcasts changes to clients. Class purchase validation should stay server-side, especially when a future currency/economy system is added.
-
-## DialogueService and UI
-
-The server is responsible for ensuring each player receives their dialogue UI. The client-side UI is split into:
-
-- `DialogueController` - receives dialogue network messages and coordinates display.
-- `Dialogue` component - presentation behavior.
-- `DialogueView` - direct GUI references and simple view operations.
-- `Typewrite` - RichText-aware typewriter behavior.
-- `DialogueEnums` - dialogue constants/data.
-
-## Shared configuration
-
-`GameConfig` is the balancing boundary. Services should prefer reading from it instead of embedding gameplay constants directly in implementation code.
+- Patient species are cached in an array once instead of rebuilt per spawn.
+- Patient records are reused through a warmed object pool.
+- Sanity changes are calculated each Heartbeat but replicated on a configured interval and epsilon.
+- Shift spawn debt is carried forward with `+= interval`, which avoids drift after a slow frame.
+- Client getters copy internal tables so UI code cannot mutate service state accidentally.
